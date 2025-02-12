@@ -33,6 +33,7 @@
 #  knowledge of the CeCILL-C license and that you accept its terms.
 
 import os
+import sys
 import shutil
 import xml.etree.ElementTree as ET
 import tarfile, zipfile
@@ -54,7 +55,7 @@ def format_IAM_line():
     tar_path = os.path.join(source_folder, tar_filename)
     if not os.path.isfile(tar_path):
         print("error - {} not found".format(tar_path))
-        exit(-1)
+        sys.exit(-1)
 
     os.makedirs(target_folder, exist_ok=True)
     tar = tarfile.open(tar_path)
@@ -102,8 +103,8 @@ def format_READ2016_line():
     """
     Format the READ 2016 dataset at line level with the official split (8,349 for training, 1,040 for validation and 1,138 for test)
     """
-    source_folder = "./read2016"
-    target_folder = "./read2016/lines"
+    source_folder = "/content/HTR-VT/data/read2016"
+    target_folder = "/content/HTR-VT/data/read2016/lines"
     if os.path.isdir(target_folder):
         shutil.rmtree(target_folder)
     os.makedirs(target_folder)
@@ -113,7 +114,7 @@ def format_READ2016_line():
     for tar_path in tar_paths:
         if not os.path.isfile(tar_path):
             print("error - {} not found".format(tar_path))
-            exit(-1)
+            sys.exit(-1)
         tar = tarfile.open(tar_path)
         tar.extractall(target_folder)
         tar.close()
@@ -187,12 +188,12 @@ def format_READ2016_line():
 
 def pkl2txt(dataset_name):
     for i in ['train', 'valid', 'test']:
-        with open((f"./{dataset_name}/lines/labels.pkl"), "rb") as f:
+        with open((f"/content/HTR-VT/data/{dataset_name}/lines/labels.pkl"), "rb") as f:
             a = pickle.load(f)
             for k, v in a['ground_truth'][i].items():
                 head = k.split('.')[0]
                 text = v['text'].replace('¬', '')
-                with open(f'./read2016/lines/{head}.txt', 'a') as t: t.write(text)
+                with open(f'/content/HTR-VT/data/read2016/lines/{head}.txt', 'a') as t: t.write(text)
 
 
 def move_files_and_delete_folders(parent_folder):
@@ -231,7 +232,7 @@ if __name__ == "__main__":
 
     format_READ2016_line()
     pkl2txt('read2016')
-    move_files_and_delete_folders("./read2016/lines")
+    move_files_and_delete_folders("/content/HTR-VT/data/read2016/lines")
 
     #format_IAM_line()
     #pkl2txt('iam')
