@@ -31,10 +31,10 @@ def main():
     parser.add_argument('--nb_cls', type=int, default=90)
     parser.add_argument('--img-size', default=[512, 64], type=int, nargs='+')
     parser.add_argument('--data_path', type=str, default='/content/HTR-VT/data/read2016/lines/')
-    parser.add_argument('--pth_path', type=str, default='../data/read/best_CER.pth')
+    parser.add_argument('--pth_path', type=str, default='/content/HTR-VT/best_CER.pth')
     parser.add_argument('--train_data_list', type=str, default='/content/HTR-VT/data/read2016/train.ln')
     parser.add_argument('--seed', type=int, default=1234)
-    parser.add_argument('--image_path', type=str, default='/content/HTR-VT/example/test_1.jpeg')
+    parser.add_argument('--image_path', type=str, default='/content/HTR-VT/data/read2016/lines/train_50.jpeg')
 
     args = parser.parse_args()
 
@@ -42,17 +42,25 @@ def main():
     torch.manual_seed(args.seed)
 
     model = HTR_VT.create_model(nb_cls=args.nb_cls, img_size=args.img_size[::-1])
-    ckpt = torch.load(args.pth_path, map_location='cpu')
+    ckpt = torch.load(args.pth_path, map_location='cpu', weights_only = True)
 
     model_dict = OrderedDict()
-    pattern = re.compile('module.')
-    for k, v in ckpt['state_dict_ema'].items():
-        if re.search(pattern, k):
-            model_dict[re.sub(pattern, '', k)] = v
-        else:
-            model_dict[k] = v
+    if 'model' in ckpt:
+        ckpt = ckpt['model']
 
-    model.load_state_dict(model_dict, strict=True)
+    unexpected_keys = ['state_dict_ema', 'optimizer']
+    for key in unexpected_keys:
+        if key in ckpt:
+            del ckpt[key]
+
+    # pattern = re.compile('module.')
+    # for k, v in ckpt['state_dict_ema'].items():
+    #     if re.search(pattern, k):
+    #         model_dict[re.sub(pattern, '', k)] = v
+    #     else:
+    #         model_dict[k] = v
+
+    model.load_state_dict(ckpt, strict= False)
     model = model.to(device)
     model.eval()
 
@@ -72,7 +80,8 @@ def main():
         preds_str = converter.decode(preds_index.data, preds_size.data)
         recognized_text = preds_str[0]
 
-    print(f"Recognized_text: {recognized_text}")
+    print(preds.max(2))
+    #print(f"Recognized_text: {recognized_text}")
 
 
 if __name__ == '__main__':
