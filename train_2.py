@@ -12,9 +12,11 @@ from utils import sam
 from utils import option
 from data import dataset
 from model import HTR_VT, ViT_DW
+from HTR_VT import MaskedAutoencoderViT
+from ViT_DW import ViT
 from functools import partial
 
-def create_model_vitmae(**kwargs):
+def create_model_vitmae(nb_cls, img_size, **kwargs):
     model = MaskedAutoencoderViT(nb_cls,
                                  img_size=img_size,
                                  patch_size=(4, 64),
@@ -29,10 +31,10 @@ def create_model_vitmae(**kwargs):
 
 
 
- def create_model_vitdw(**kwargs):
-     model =  ViT(image_size = img_size,
+ def create_model_vitdw(image_size, num_classes, **kwargs):
+     model =  ViT(image_size = image_size,
                     patch_size= (4,64),
-                    num_classes = nb_cls,
+                    num_classes = num_classes,
                     dim= 768,
                     depth= 4,
                     heads= 6,
@@ -40,19 +42,17 @@ def create_model_vitmae(**kwargs):
                     dim_head= 64,
                     dropout= 0.0,
                     emb_dropout= 0.0,
-                    )
+                     **kwargs)
      return model 
 
 
-def compute_loss(args, model_type, image, batch_size, criterion, text, length):
+def compute_loss(args, model_type, model, image, batch_size, criterion, text, length):
      
     if model_type == 'vitmae':
-       model = create_model_vitmae()
        preds = model(image, args.mask_ratio, args.max_span_length, use_masking=True)
         
-    elif model_type == 'vitdw':
-        model = create_model_vitdw()
-        preds = model(image)
+    elif model_type == 'vitdw'
+       preds = model(image)
     
     preds = preds.float()
     preds_size = torch.IntTensor([preds.size(1)] * batch_size).cuda()
@@ -76,7 +76,13 @@ def main():
     logger.info(json.dumps(vars(args), indent=4, sort_keys=True))
     writer = SummaryWriter(args.save_dir)
 
-    model = create_model_vitmae(nb_cls=args.nb_cls, img_size=args.img_size[::-1])
+    model_type = args.model_type
+
+    if model_type == 'vitmae':
+       model = create_model_vitmae(nb_cls=args.nb_cls, img_size=args.img_size[::-1])
+        
+    elif model_type == 'vitdw':
+       model = create_model_vitdw(image_size= args.img_size[::-1], num_classes=args.nb_cls)
 
     total_param = sum(p.numel() for p in model.parameters())
     logger.info('total_param is {}'.format(total_param))
