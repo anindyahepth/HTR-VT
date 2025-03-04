@@ -1,5 +1,5 @@
-
 import torch
+import torch.nn as nn
 import torch.utils.data
 import torch.backends.cudnn as cudnn
 from torch.utils.tensorboard import SummaryWriter
@@ -11,9 +11,8 @@ from utils import utils
 from utils import sam
 from utils import option
 from data import dataset
-from model import HTR_VT, ViT_DW
-from HTR_VT import MaskedAutoencoderViT
-from ViT_DW import ViT
+from model.HTR_VT import MaskedAutoencoderViT
+from model.ViT_DW import ViT
 from functools import partial
 
 def create_model_vitmae(nb_cls, img_size, **kwargs):
