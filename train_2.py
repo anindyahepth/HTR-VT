@@ -31,7 +31,7 @@ def create_model_vitmae(nb_cls, img_size, **kwargs):
 
 
 
- def create_model_vitdw(image_size, num_classes, **kwargs):
+def create_model_vitdw(image_size, num_classes, **kwargs):
      model =  ViT(image_size = image_size,
                     patch_size= (4,64),
                     num_classes = num_classes,
