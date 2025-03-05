@@ -30,9 +30,9 @@ def create_model_vitmae(nb_cls, img_size, **kwargs):
 
 
 
-def create_model_vitdw(image_size, num_classes, **kwargs):
+def create_model_vitdw(image_size, num_classes):
      model =  ViT(image_size = image_size,
-                    patch_size= (4,64),
+                    patch_size= (4, 64),
                     num_classes = num_classes,
                     dim= 768,
                     depth= 4,
@@ -41,7 +41,7 @@ def create_model_vitdw(image_size, num_classes, **kwargs):
                     dim_head= 64,
                     dropout= 0.0,
                     emb_dropout= 0.0,
-                     **kwargs)
+                    )
      return model 
 
 
@@ -54,6 +54,7 @@ def compute_loss(args, model_type, model, image, batch_size, criterion, text, le
        preds = model(image)
     
     preds = preds.float()
+    # print(f"preds shape: {preds.shape}")
     preds_size = torch.IntTensor([preds.size(1)] * batch_size).cuda()
     preds = preds.permute(1, 0, 2).log_softmax(2)
 
@@ -81,7 +82,7 @@ def main():
        model = create_model_vitmae(nb_cls=args.nb_cls, img_size=args.img_size[::-1])
         
     elif model_type == 'vitdw':
-       model = create_model_vitdw(image_size= args.img_size[::-1], num_classes=args.nb_cls)
+       model = create_model_vitdw(image_size= (512, 64), num_classes=args.nb_cls)
 
     total_param = sum(p.numel() for p in model.parameters())
     logger.info('total_param is {}'.format(total_param))
