@@ -50,7 +50,7 @@ def compute_loss(args, model_type, model, image, batch_size, criterion, text, le
     if model_type == 'vitmae':
        preds = model(image, args.mask_ratio, args.max_span_length, use_masking=True)
         
-    elif model_type == 'vitdw'
+    elif model_type == 'vitdw':
        preds = model(image)
     
     preds = preds.float()
